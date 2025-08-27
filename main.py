@@ -1,0 +1,22 @@
+import logging
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+    datefmt="%H:%M:%S",
+)
+
+BUDGET: int = 3_500_000
+PRICE_MATERIAL_BATCH: int = 700_000
+PRICE_HUMAN_BATHC: int = 200_000
+BATCH_SIZE: int = 1000
+BATHC_PER_MONTH: int = 2
+BATCH_DEFECT: float = 0.06
+EQUIPMENT_NUM = 10
+EMPLOYEES = 10
+
+CAP_PER_EQUIP_AT_100 = (BATHC_PER_MONTH * BATCH_SIZE) / (EQUIPMENT_NUM * 0.75)
+
+OLD_REF = 95.5
+NEW_REF = 130.0
+NEW_EQUIP_FACTOR = NEW_REF / OLD_REF  
