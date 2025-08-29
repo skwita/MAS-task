@@ -1,4 +1,12 @@
+import asyncio
 import logging
+
+from model.Agents.DirectorAgent import DirectorAgent
+from model.Agents.ProductionEngine import ProductionAgent
+from model.Agents.QualityAgent import QualityAgent
+from model.Agents.SalesAgent import SalesAgent
+from model.Environment import Environment
+from service.MessageBus import MessageBus
 
 logging.basicConfig(
     level=logging.INFO,
@@ -6,17 +14,22 @@ logging.basicConfig(
     datefmt="%H:%M:%S",
 )
 
-BUDGET: int = 3_500_000
-PRICE_MATERIAL_BATCH: int = 700_000
-PRICE_HUMAN_BATHC: int = 200_000
-BATCH_SIZE: int = 1000
-BATHC_PER_MONTH: int = 2
-BATCH_DEFECT: float = 0.06
-EQUIPMENT_NUM = 10
-EMPLOYEES = 10
 
-CAP_PER_EQUIP_AT_100 = (BATHC_PER_MONTH * BATCH_SIZE) / (EQUIPMENT_NUM * 0.75)
+async def main():
+    env = Environment()
+    bus = MessageBus()
 
-OLD_REF = 95.5
-NEW_REF = 130.0
-NEW_EQUIP_FACTOR = NEW_REF / OLD_REF  
+    production = ProductionAgent("production", bus, env)
+    quality = QualityAgent("quality", bus, env)
+    sales = SalesAgent("sales", bus, env)
+    director = DirectorAgent("director", bus, env)
+
+    tasks = [
+        asyncio.create_task(a.run())
+        for a in (production, quality, sales, director)
+    ]
+
+    await asyncio.gather(*tasks)
+
+if __name__ == "__main__":
+    asyncio.run(main())
