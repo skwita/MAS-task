@@ -2,7 +2,7 @@ import asyncio
 import logging
 
 from model.Agents.DirectorAgent import DirectorAgent
-from model.Agents.ProductionEngine import ProductionAgent
+from model.Agents.ProductionAgent import ProductionAgent
 from model.Agents.QualityAgent import QualityAgent
 from model.Agents.SalesAgent import SalesAgent
 from model.Environment import Environment

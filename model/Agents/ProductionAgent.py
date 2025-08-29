@@ -1,22 +1,29 @@
-from typing import List
+from typing import List, Tuple
 from model.Agents.Agent import Agent
 from model.data.Plan import Plan
 from util.Util import dict_to_plan
 
 
-class QualityAgent(Agent):
-    """Цель: минимизировать брак (defective_units)."""
-
+class ProductionAgent(Agent):
+    """
+    Цель: повышать выпуск (produced_units). Работает итеративно:
+    - принимает базовый план от директора (decision_round/adopt_plan)
+    - на шаге negotiate_step генерирует локальное улучшение и рассылает предложение
+    - принимает чужие предложения и, если они лучше по локальной метрике, принимает
+    - отчитывается директору step_done(changed, plan, metrics)
+    - по kpi_request отдаёт свой текущий план
+    - по final_decision завершает работу
+    """
     def score(self, plan: Plan) -> float:
         m = self.env.evaluate(plan)
-        return -float(m.defective_units) if m.feasible else -1e9
+        return float(m.produced_units) if m.feasible else -1e9
 
     def neighborhood(self, base: Plan) -> List[Plan]:
-        opts: List[Plan] = []
-        for bm in (False, True):
-            for bs in (False, True):
-                opts.append(Plan(base.batches, base.replace_equip, bm, bs))
-        return opts
+        res: List[Plan] = []
+        for b in [max(1, base.batches-1), base.batches, min(4, base.batches+1)]:
+            for repl in [base.replace_equip, min(6, base.replace_equip+2)]:
+                res.append(Plan(b, repl, base.better_materials, base.better_staff))
+        return res
 
     async def run(self):
         current: Plan = Plan(2, 0, False, False)
@@ -37,9 +44,9 @@ class QualityAgent(Agent):
                     current = best_local
                     changed = True
                 # 2) разослать своё предложение
-                for target in ("production", "sales"):
+                for target in ("quality", "sales"):
                     await self.send(target, "proposal", {"plan": current.to_dict()})
-                # 3) принять предложения коллег
+                # 3) принять предложения коллег (окно небольшое)
                 while True:
                     inc = await self.recv(timeout=0.2)
                     if not inc:
