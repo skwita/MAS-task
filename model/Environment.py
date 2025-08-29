@@ -9,7 +9,7 @@ from model.config import (EQUIPMENT_NUM, CAP_PER_EQUIP_AT_100, NEW_EQUIP_FACTOR,
 
 class Environment:
     total_equip: int
-    def init(self):
+    def __init__(self):
         # базовое количество старых и потенциально новых единиц оборудования
         self.total_equip = EQUIPMENT_NUM
 

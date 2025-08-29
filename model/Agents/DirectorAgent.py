@@ -3,12 +3,10 @@ from typing import List, Tuple
 from model.Agents.Agent import Agent
 from model.data.Plan import Plan
 from model.data.PlanMetrics import PlanMetrics
-from util.Util import dict_to_metrics, dict_to_plan
+from util.Util import as_table, dict_to_metrics, dict_to_plan
 
 
 class DirectorAgent(Agent):
-    """Цель: выбрать план с максимальной выручкой при соблюдении ограничений."""
-
     async def run(self):
         # Запрос KPI у нижнего уровня (они не могут отказать)
         for target in ("production", "quality", "sales"):
@@ -16,7 +14,7 @@ class DirectorAgent(Agent):
 
         reports: List[Tuple[str, Plan, PlanMetrics]] = []
 
-        # Ждем отчеты/репорты от всех
+        # Ждем отчеты от всех
         deadline = asyncio.get_event_loop().time() + 2.0
         while asyncio.get_event_loop().time() < deadline:
             msg = await self.recv(timeout=0.2)
@@ -51,4 +49,4 @@ class DirectorAgent(Agent):
         })
         # Для визуального вывода в консоль
         print("\n===== ИТОГОВЫЙ ПЛАН (директор) =====")
-        # print(as_table(plan, metrics))
+        print(as_table(plan, metrics))
